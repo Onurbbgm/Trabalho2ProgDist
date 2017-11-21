@@ -259,21 +259,21 @@ public class JogoServidor {
         for(int p = 0; p<preJogos.size(); p++){
             for(int a = 0; a<jogos.size(); a++){
                 if(jogos.get(a).j.id == id){
-                    return jogos.get(a).j.nome;
+                    return jogos.get(a).j2.nome;
                 }
                 if(jogos.get(a).j2.id == id){
-                    return jogos.get(a).j2.nome;
+                    return jogos.get(a).j.nome;
                 }
             }
             if(preJogos.get(p).j.id == id || preJogos.get(p).j2.id == id){
                 jogos.add(preJogos.get(p));             
                 if(preJogos.get(p).j.id == id){
-                    nome = preJogos.get(p).j.nome;
+                    nome = preJogos.get(p).j2.nome;
                     preJogos.remove(p);
                     return nome;
                 }
                 else{
-                    nome = preJogos.get(p).j2.nome;
+                    nome = preJogos.get(p).j.nome;
                     preJogos.remove(p);
                     return nome;
                 }
@@ -971,10 +971,10 @@ public class JogoServidor {
 			}
 		}
 		if(vez==0){
-			return -3;//nao eh a sua vez
+			return -4;//nao eh a sua vez
 		}
 		if(tabuleiroCheio(id)){
-			return -4;//nao tem mais posicoes livres disponiveis
+			return -5;//nao tem mais posicoes livres disponiveis
 		}
 		
 		return -1;
@@ -2393,7 +2393,7 @@ public class JogoServidor {
 						}	
 					}
 					//posAtual 7 movimento diagonal
-					if(posAtual == 7 && jogos.get(i).tabuleiro[0][1] == 'c'  ){
+					if(posAtual == 7 && jogos.get(i).tabuleiro[2][1] == 'c'  ){
 						if(sentidoDesl == 4 && casasDeslocadas == 0 && orientacao == 0){
 							jogos.get(i).tabuleiro[2][1] = 'C';//perpendicular
 							if(jogos.get(i).j2.vez == 0){
@@ -4027,7 +4027,7 @@ public class JogoServidor {
 						}	
 					}
 					//posAtual 7 movimento diagonal
-					if(posAtual == 7 && jogos.get(i).tabuleiro[0][1] == 'e'  ){
+					if(posAtual == 7 && jogos.get(i).tabuleiro[2][1] == 'e'  ){
 						if(sentidoDesl == 4 && casasDeslocadas == 0 && orientacao == 0){
 							jogos.get(i).tabuleiro[2][1] = 'E';//perpendicular
 							if(jogos.get(i).j2.vez == 0){
