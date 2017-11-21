@@ -42,7 +42,7 @@ class Jogo{
     public int numParticipantes;
     public Jogador j;
     public Jogador j2;
-    public long contTemBuscaJog;
+   // public long contTemBuscaJog;
     public Jogo(Jogador j1, Jogador j2, char[][] tabuleiro)  {
 		this.numParticipantes = numParticipantes;
                 this.idJogo = idJogo;
@@ -54,8 +54,7 @@ class Jogo{
 				tabuleiro[linha][coluna]='.';
 			}      
 		}
-	}
-    
+	}  
     
 }
 
@@ -64,35 +63,37 @@ public class JogoServidor {
 
     private ArrayList<Jogador> jogadores = new ArrayList<Jogador>();
     private ArrayList<Jogo> jogos = new ArrayList<Jogo>();
-    private char[][] tabuleiro = new char[3][3];
-    private char peca;
+    private ArrayList<Jogador> preRegistrados = new ArrayList<Jogador>();
+    private Jogo preJogo;
+   // private char[][] tabuleiro = new char[3][3];
+    //private char peca;
     private static int idJogador = 1;
     private static int idJogo = 1;
-    private int numParticipantes;
+    //private int numParticipantes;
 //    private Jogador j;
 //    private Jogador j2;
     private long contTemBuscaJog;
     
-//    public JogoServidor(Jogador j1, Jogador j2, char[][] tabuleiro)  {
-//		this.numParticipantes = numParticipantes;
-//		j = j1;
-//		this.j2 = j2;
-//		this.tabuleiro = tabuleiro;
-//		for(int linha=0 ; linha<3 ; linha++){
-//			for(int coluna=0 ; coluna<3 ; coluna++){
-//				tabuleiro[linha][coluna]='.';
-//			}      
-//		}
-//	}
+
     
     /**
      * Operação de Web service
      */
     @WebMethod(operationName = "preRegistro")
     public int preRegistro(String j1, int id1, String j2, int id2) {
-        
-        
-        
+        Jogador pre1 = new Jogador(j1, id1, 1, 1, 1);
+        preRegistrados.add(pre1);
+        Jogador pre2 = new Jogador(j2, id2, 2, 0, 1);
+        preRegistrados.add(pre2);
+        char[][] tab = new char[3][3];
+	for(int linha=0 ; linha<3 ; linha++){
+            for(int coluna=0 ; coluna<3 ; coluna++){
+		tab[linha][coluna]='.';
+            }      
+	}
+        preJogo = new Jogo(pre1,pre2,tab);
+        preJogo.numParticipantes = 2;
+        preJogo.idJogo = idJogo*5;
         return 0;
     }
     
@@ -104,6 +105,13 @@ public class JogoServidor {
     @WebMethod(operationName = "registraJogador")
     public int registraJogador(@WebParam(name = "nome") String nome) {
        int id = idJogador;
+       if(!preRegistrados.isEmpty()){
+        for(int h = 0; h<preRegistrados.size(); h++){
+               if(preRegistrados.get(h).nome.equals(nome)){
+                   return preRegistrados.get(h).id;
+                }
+        }
+       }
 		if(jogadores.size()>=1001){
 			return -2;//numero maximo de jogadores atingidos
 		}
@@ -112,6 +120,13 @@ public class JogoServidor {
 				return -1; //Usuariao ja cadastrado
 			}
 		}
+                int p = 0;
+                while(p<preRegistrados.size()){
+                    if(preRegistrados.get(p).id == id){
+                        id=id+1;
+                    }
+                    p++;
+                }
 		Jogador j = new Jogador(nome,id,0,0,0);
 		jogadores.add(j);
 		idJogador++;
@@ -129,6 +144,13 @@ public class JogoServidor {
         for(int i = 0; i<jogos.size(); i++){
             if((jogos.get(i).j.id == id  || jogos.get(i).j2.id == id) && jogos.get(i).numParticipantes == 2){
                // int id2 = jogos.get(i).j2.id;
+                for(int p = 0; p<preRegistrados.size(); p++){
+                    if(preRegistrados.get(p).id == id){
+                        preRegistrados.remove(p);
+                        jogos.remove(i);
+                        return 0;
+                    }
+                }
                 for(int j = 0; j<jogadores.size(); j++){
                     if(jogadores.get(j).id == id){
                         jogadores.remove(j);                                            
@@ -148,6 +170,12 @@ public class JogoServidor {
 //                    return 0;//partida encerradad com sucesso
 //            }
             else{
+                for(int a = 0; a<preRegistrados.size(); a++){
+                    if(preRegistrados.get(a).id == id){
+                        preRegistrados.remove(a);
+                        return 0;
+                    }
+                }
                 for(int h = 0; h<jogadores.size(); h++){
                     if(jogadores.get(h).id == id){
                         jogadores.remove(h);
@@ -212,6 +240,23 @@ public class JogoServidor {
     @WebMethod(operationName = "obtemOponente")
     public String obtemOponente(@WebParam(name = "id") int id) {
         int idJog = idJogo;
+        
+        for(int p = 0; p<preRegistrados.size(); p++){
+            for(int a = 0; a<jogos.size(); a++){
+                if(jogos.get(a).j.id == id || jogos.get(a).j2.id == id){
+                    return "";
+                }
+            }
+            if(preRegistrados.get(p).id == id){
+                jogos.add(preJogo);
+                if(preJogo.j.id == id){
+                    return preJogo.j.nome;
+                }
+                else{
+                    return preJogo.j2.nome;
+                }
+            }
+        }
         long tempoPassado = System.currentTimeMillis() - contTemBuscaJog;
         long segundos = tempoPassado /1000;
 	System.out.println(segundos);
@@ -297,25 +342,25 @@ public class JogoServidor {
 		            for(int coluna=0 ; coluna<3 ; coluna++){
 		                
 		                if(jogos.get(i).tabuleiro[linha][coluna]== '.'){
-		                    tab += " . ";
+		                    tab += ".";
 		                }
 		                if(jogos.get(i).tabuleiro[linha][coluna]=='c'){
-		                    tab += " c ";
+		                    tab += "c";
 		                }
 		                if(jogos.get(i).tabuleiro[linha][coluna]=='C'){
-		                    tab += " C ";
+		                    tab += "C";
 		                }
 		                if(jogos.get(i).tabuleiro[linha][coluna]=='e'){
-		                    tab += " e ";
+		                    tab += "e";
 		                }
 		                if(jogos.get(i).tabuleiro[linha][coluna]=='E'){
-		                    tab += " E ";
+		                    tab += "E";
 		                }
 		                
-		                if(coluna==0 || coluna==1)
-		                    tab += "|";
+//		                if(coluna==0 || coluna==1)
+//		                    tab += "|";
 		            }
-		            tab += "\n";
+//		            tab += "\n";
 		        }
 				return tab;
 			}
