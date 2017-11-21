@@ -258,8 +258,11 @@ public class JogoServidor {
         String nome = "";
         for(int p = 0; p<preJogos.size(); p++){
             for(int a = 0; a<jogos.size(); a++){
-                if(jogos.get(a).j.id == id || jogos.get(a).j2.id == id){
-                    return "";
+                if(jogos.get(a).j.id == id){
+                    return jogos.get(a).j.nome;
+                }
+                if(jogos.get(a).j2.id == id){
+                    return jogos.get(a).j2.nome;
                 }
             }
             if(preJogos.get(p).j.id == id || preJogos.get(p).j2.id == id){
