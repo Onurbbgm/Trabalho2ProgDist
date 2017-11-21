@@ -26,7 +26,7 @@ public class ChungTWSclient {
     public static void main(String[] args) throws IOException {
         chungtwsclient.JogoServidor_Service service = new chungtwsclient.JogoServidor_Service();
         port = service.getJogoServidorPort();
-        executaTeste("ChungToi-0000");
+        executaTeste(args[0]);
     }
 
 

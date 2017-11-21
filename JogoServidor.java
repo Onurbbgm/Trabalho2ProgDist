@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package jogo;
+package jogoServ;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class JogoServidor {
     private ArrayList<Jogador> jogadores = new ArrayList<Jogador>();
     private ArrayList<Jogo> jogos = new ArrayList<Jogo>();
     private ArrayList<Jogador> preRegistrados = new ArrayList<Jogador>();
-    private Jogo preJogo;
+    private ArrayList<Jogo> preJogos = new ArrayList<Jogo>();
    // private char[][] tabuleiro = new char[3][3];
     //private char peca;
     private static int idJogador = 1;
@@ -72,7 +72,7 @@ public class JogoServidor {
     //private int numParticipantes;
 //    private Jogador j;
 //    private Jogador j2;
-    private long contTemBuscaJog;
+   // private long contTemBuscaJog;
     
 
     
@@ -83,7 +83,9 @@ public class JogoServidor {
     public int preRegistro(String j1, int id1, String j2, int id2) {
         Jogador pre1 = new Jogador(j1, id1, 1, 1, 1);
         preRegistrados.add(pre1);
+        System.out.println(pre1.id+" "+pre1.nome);
         Jogador pre2 = new Jogador(j2, id2, 2, 0, 1);
+        System.out.println(pre2.id +" "+pre2.nome);
         preRegistrados.add(pre2);
         char[][] tab = new char[3][3];
 	for(int linha=0 ; linha<3 ; linha++){
@@ -91,9 +93,11 @@ public class JogoServidor {
 		tab[linha][coluna]='.';
             }      
 	}
-        preJogo = new Jogo(pre1,pre2,tab);
+        Jogo preJogo = new Jogo(pre1,pre2,tab);
         preJogo.numParticipantes = 2;
         preJogo.idJogo = idJogo*5;
+        preJogos.add(preJogo);
+        System.out.println(preJogo.j.nome +" "+preJogo.j2.nome);
         return 0;
     }
     
@@ -130,7 +134,7 @@ public class JogoServidor {
 		Jogador j = new Jogador(nome,id,0,0,0);
 		jogadores.add(j);
 		idJogador++;
-		contTemBuscaJog = System.currentTimeMillis();
+		//contTemBuscaJog = System.currentTimeMillis();
 		return id;
     }
 
@@ -140,7 +144,18 @@ public class JogoServidor {
     @WebMethod(operationName = "encerraPartida")
     public int encerraPartida(@WebParam(name = "id") int id) {
     
-        //Talvez modificar para que cada jogador tenha que chamar encerraPartida e nao so um!
+        for(int b = 0; b<preJogos.size(); b++){
+            if(preJogos.get(b).j.id == id || preJogos.get(b).j2.id == id){
+                for(int c = 0; c<preRegistrados.size(); c++){
+                        if(preRegistrados.get(c).id == id){
+                            preRegistrados.remove(c);
+                            preJogos.remove(b);
+                            return 0;
+                        }
+                    }
+            }
+        }
+        
         for(int i = 0; i<jogos.size(); i++){
             if((jogos.get(i).j.id == id  || jogos.get(i).j2.id == id) && jogos.get(i).numParticipantes == 2){
                // int id2 = jogos.get(i).j2.id;
@@ -240,29 +255,33 @@ public class JogoServidor {
     @WebMethod(operationName = "obtemOponente")
     public String obtemOponente(@WebParam(name = "id") int id) {
         int idJog = idJogo;
-        
-        for(int p = 0; p<preRegistrados.size(); p++){
+        String nome = "";
+        for(int p = 0; p<preJogos.size(); p++){
             for(int a = 0; a<jogos.size(); a++){
                 if(jogos.get(a).j.id == id || jogos.get(a).j2.id == id){
                     return "";
                 }
             }
-            if(preRegistrados.get(p).id == id){
-                jogos.add(preJogo);
-                if(preJogo.j.id == id){
-                    return preJogo.j.nome;
+            if(preJogos.get(p).j.id == id || preJogos.get(p).j2.id == id){
+                jogos.add(preJogos.get(p));             
+                if(preJogos.get(p).j.id == id){
+                    nome = preJogos.get(p).j.nome;
+                    preJogos.remove(p);
+                    return nome;
                 }
                 else{
-                    return preJogo.j2.nome;
+                    nome = preJogos.get(p).j2.nome;
+                    preJogos.remove(p);
+                    return nome;
                 }
             }
         }
-        long tempoPassado = System.currentTimeMillis() - contTemBuscaJog;
-        long segundos = tempoPassado /1000;
-	System.out.println(segundos);
-	if(segundos>=120){
-            return "Tempo Esgotado";	
-	}
+        //long tempoPassado = System.currentTimeMillis() - contTemBuscaJog;
+     //   long segundos = tempoPassado /1000;
+//	System.out.println(segundos);
+//	if(segundos>=120){
+//            return "Tempo Esgotado";	
+//	}
         String n = "";
 	char[][] tab = new char[3][3];
 	for(int linha=0 ; linha<3 ; linha++){
@@ -334,9 +353,9 @@ public class JogoServidor {
      */
     @WebMethod(operationName = "obtemTabuleiro")
     public String obtemTabuleiro(@WebParam(name = "id") int id) {
+        String tab = "";
         for(int i = 0; i<jogos.size(); i++){
-			if(jogos.get(i).j.id==id || jogos.get(i).j2.id==id ){
-				String tab = "";
+			if(jogos.get(i).j.id==id || jogos.get(i).j2.id==id ){	
 		        for(int linha=0 ; linha<3 ; linha++){
 		        
 		            for(int coluna=0 ; coluna<3 ; coluna++){
